@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "react-router build",
+		"migrate": "yes Y | wrangler d1 migrations apply openform",
 		"cf-typegen": "wrangler types",
 		"deploy": "npm run build && wrangler deploy",
 		"dev": "react-router dev",
@@ -19,8 +20,10 @@
 		"@radix-ui/react-separator": "^1.1.7",
 		"@radix-ui/react-slot": "^1.2.3",
 		"@radix-ui/react-tooltip": "^1.2.8",
+		"@tanstack/react-table": "^8.21.3",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
+		"date-fns": "^4.1.0",
 		"isbot": "^5.1.31",
 		"lucide-react": "^0.548.0",
 		"next-themes": "^0.4.6",

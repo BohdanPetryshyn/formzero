@@ -6,6 +6,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "#/components/ui/sidebar"
+import { CreateFirstForm } from "#/components/create-first-form"
 
 export async function loader({ context }: Route.LoaderArgs) {
   const db = context.cloudflare.env.DB
@@ -60,6 +61,11 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function Forms() {
   const { forms } = useLoaderData<typeof loader>()
+
+  // Show empty state when there are no forms
+  if (forms.length === 0) {
+    return <CreateFirstForm />
+  }
 
   return (
     <SidebarProvider>

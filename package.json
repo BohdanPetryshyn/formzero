@@ -4,9 +4,9 @@
 	"type": "module",
 	"scripts": {
 		"build": "react-router build",
-		"migrate": "yes Y | wrangler d1 migrations apply formzero",
+		"migrate": "yes Y | wrangler d1 migrations apply DB",
 		"cf-typegen": "wrangler types",
-		"deploy": "npm run build && wrangler deploy",
+		"deploy": "npm run build && npm run migrate -- --remote && wrangler deploy",
 		"dev": "react-router dev",
 		"postinstall": "npm run cf-typegen",
 		"preview": "npm run build && vite preview",

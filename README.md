@@ -1,79 +1,125 @@
-# Welcome to React Router!
+# FormZero
 
-A modern, production-ready template for building full-stack React applications using React Router.
+A free, open-source form backend handler that you can deploy to your own Cloudflare account in seconds. No monthly fees, no submission limits - just forms that work.
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/BohdanPetryshyn/formzero)
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- **Zero Cost**: Deploy to your Cloudflare account and use their generous free tier
+- **Unlimited Submissions**: Store all your form submissions in a D1 database
+- **Beautiful UI**: Modern dashboard to view and manage submissions
+- **Multiple Forms**: Create and manage multiple forms from one deployment
+- **REST API**: Simple endpoint to receive form submissions
+- **One-Click Deploy**: Get started in seconds with the Deploy to Cloudflare button
 
-## Getting Started
+## Quick Start
 
-### Installation
+### Option 1: Deploy to Cloudflare (Recommended)
 
-Install the dependencies:
+1. Click the "Deploy to Cloudflare" button above
+2. Authorize Cloudflare to access your GitHub/GitLab account
+3. Configure your deployment settings
+4. Your form backend will be deployed automatically!
+
+### Option 2: Manual Deployment
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/formzero.git
+   cd formzero
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a D1 database:
+   ```bash
+   npx wrangler d1 create formzero
+   ```
+
+4. Update `wrangler.jsonc` with your database ID
+
+5. Run migrations:
+   ```bash
+   npm run migrate
+   ```
+
+6. Deploy:
+   ```bash
+   npm run deploy
+   ```
+
+## Usage
+
+### Creating Your First Form
+
+1. Visit your deployed application at `https://your-worker.workers.dev`
+2. Create a new form and give it a name (e.g., "Contact Form")
+3. Copy the form endpoint URL
+
+### Submitting to Your Form
+
+Send a POST request to `/api/forms/{form-id}/submissions`:
 
 ```bash
+curl -X POST https://your-worker.workers.dev/api/forms/contact-form/submissions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "message": "Hello!"
+  }'
+```
+
+Or use a simple HTML form:
+
+```html
+<form action="https://your-worker.workers.dev/api/forms/contact-form/submissions" method="POST">
+  <input type="text" name="name" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Your Email" required>
+  <textarea name="message" placeholder="Your Message" required></textarea>
+  <button type="submit">Send</button>
+</form>
+```
+
+### Viewing Submissions
+
+Navigate to `/forms/{form-id}/submissions` in your dashboard to view all submissions in a clean table format.
+
+## Tech Stack
+
+- [Cloudflare Workers](https://workers.cloudflare.com/) - Serverless runtime
+- [Cloudflare D1](https://developers.cloudflare.com/d1/) - SQLite database
+- [React Router v7](https://reactrouter.com/) - Full-stack framework
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+
+## Development
+
+```bash
+# Install dependencies
 npm install
-```
 
-### Development
+# Run migrations locally
+npm run migrate
 
-Start the development server with HMR:
-
-```bash
+# Start development server
 npm run dev
-```
 
-Your application will be available at `http://localhost:5173`.
-
-## Previewing the Production Build
-
-Preview the production build locally:
-
-```bash
-npm run preview
-```
-
-## Building for Production
-
-Create a production build:
-
-```bash
+# Build for production
 npm run build
-```
 
-## Deployment
-
-Deployment is done using the Wrangler CLI.
-
-To build and deploy directly to production:
-
-```sh
+# Deploy to Cloudflare
 npm run deploy
 ```
 
-To deploy a preview URL:
+## License
 
-```sh
-npx wrangler versions upload
-```
+MIT
 
-You can then promote a version to production after verification or roll it out progressively.
+## Contributing
 
-```sh
-npx wrangler versions deploy
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+Contributions are welcome! Please feel free to submit a Pull Request.

@@ -3,6 +3,9 @@
   "include": [
     ".react-router/types/**/*",
     "app/**/*",
+    "components/**/*",
+    "lib/**/*",
+    "hooks/**/*",
     "app/**/.server/**/*",
     "app/**/.client/**/*",
     "workers/**/*",
@@ -20,7 +23,8 @@
     "baseUrl": ".",
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": ["./app/*"],
+      "#/*": ["./*"]
     },
     "esModuleInterop": true,
     "resolveJsonModule": true

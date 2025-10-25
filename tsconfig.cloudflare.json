@@ -4,9 +4,9 @@
     ".react-router/types/**/*",
     "app/**/*",
     "components/**/*",
-    "lib/**/*",
-    "hooks/**/*",
-    "types/**/*",
+    "app/lib/**/*",
+    "app/hooks/**/*",
+    "app/types/**/*",
     "app/**/.server/**/*",
     "app/**/.client/**/*",
     "workers/**/*",
@@ -25,7 +25,7 @@
     "rootDirs": [".", "./.react-router/types"],
     "paths": {
       "~/*": ["./app/*"],
-      "#/*": ["./*"]
+      "#/*": ["./app/*"]
     },
     "esModuleInterop": true,
     "resolveJsonModule": true

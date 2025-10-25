@@ -6,6 +6,7 @@
     "components/**/*",
     "lib/**/*",
     "hooks/**/*",
+    "types/**/*",
     "app/**/.server/**/*",
     "app/**/.client/**/*",
     "workers/**/*",

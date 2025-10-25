@@ -1,4 +1,4 @@
-import { useLoaderData, useParams } from "react-router"
+import { useLoaderData } from "react-router"
 import type { Route } from "./+types/forms.$formId.submissions"
 import { createColumns } from "./forms.$formId.submissions/columns"
 import type { Submission } from "./forms.$formId.submissions/columns"
@@ -44,8 +44,6 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 }
 
 export default function SubmissionsPage() {
-  const params = useParams()
-  const formId = params.formId
   const { submissions, stats } = useLoaderData<typeof loader>()
 
   // Generate columns based on submission data

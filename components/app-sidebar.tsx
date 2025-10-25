@@ -1,5 +1,5 @@
 import { FileText } from "lucide-react"
-
+import type { Form } from "#/types/form"
 import { FormSwitcher } from "#/components/form-switcher"
 import { FormNav } from "#/components/form-nav"
 import {
@@ -13,11 +13,15 @@ import {
   SidebarRail,
 } from "#/components/ui/sidebar"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  forms: Form[]
+}
+
+export function AppSidebar({ forms, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <FormSwitcher />
+        <FormSwitcher forms={forms} />
       </SidebarHeader>
       <SidebarContent>
         <FormNav />

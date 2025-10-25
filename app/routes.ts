@@ -7,8 +7,10 @@ export default [
   route("/error", "routes/error.tsx"),
   route("/dashboard", "routes/dashboard.tsx"),
 
-  route("/forms/:formId", "routes/forms.$formId.tsx", [
-    route("submissions", "routes/forms.$formId.submissions.tsx"),
-    route("integration", "routes/forms.$formId.integration.tsx"),
+  route("/forms", "routes/forms.tsx", [
+    route(":formId", "routes/forms.$formId.tsx", [
+      route("submissions", "routes/forms.$formId.submissions.tsx"),
+      route("integration", "routes/forms.$formId.integration.tsx"),
+    ]),
   ]),
 ] satisfies RouteConfig;

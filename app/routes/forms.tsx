@@ -1,0 +1,72 @@
+import { Outlet, redirect, useLoaderData, useLocation, useParams } from "react-router"
+import type { Route } from "./+types/forms"
+import type { Form } from "#/types/form"
+import { AppSidebar } from "#/components/app-sidebar"
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "#/components/ui/sidebar"
+
+export async function loader({ context }: Route.LoaderArgs) {
+  const db = context.cloudflare.env.DB
+
+  // Fetch all forms
+  const result = await db
+    .prepare("SELECT id, name FROM forms ORDER BY created_at DESC")
+    .all()
+
+  return {
+    forms: result.results as Form[],
+  }
+}
+
+export async function action({ request, context }: Route.ActionArgs) {
+  const db = context.cloudflare.env.DB
+  const formData = await request.formData()
+
+  const name = formData.get("name") as string
+
+  if (!name) {
+    return { error: "Form name is required" }
+  }
+
+  // Generate a slug from the form name
+  const id = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+
+  // Check if form with this ID already exists
+  const existing = await db
+    .prepare("SELECT id FROM forms WHERE id = ?")
+    .bind(id)
+    .first()
+
+  if (existing) {
+    return { error: "A form with this name already exists" }
+  }
+
+  const createdAt = Date.now()
+
+  await db
+    .prepare(
+      "INSERT INTO forms (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
+    )
+    .bind(id, name, createdAt, createdAt)
+    .run()
+
+  return redirect(`/forms/${id}/submissions`)
+}
+
+export default function Forms() {
+  const { forms } = useLoaderData<typeof loader>()
+
+  return (
+    <SidebarProvider>
+      <AppSidebar forms={forms} />
+      <SidebarInset>
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}

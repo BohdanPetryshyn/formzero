@@ -1,5 +1,5 @@
 import type { Route } from "./+types/forms.$formId"
-import { Outlet, useLoaderData, useLocation, useParams } from "react-router";
+import { Outlet, redirect, useLoaderData, useLocation, useParams } from "react-router";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,7 +14,7 @@ import {
 } from "#/components/ui/sidebar"
 import type { Form } from "#/types/form";
 
-export async function loader({ context, params }: Route.LoaderArgs) {
+export async function loader({ context, params, request }: Route.LoaderArgs) {
   const db = context.cloudflare.env.DB
 
   // Fetch form details
@@ -22,6 +22,13 @@ export async function loader({ context, params }: Route.LoaderArgs) {
     .prepare("SELECT id, name FROM forms WHERE id = ?")
     .bind(params.formId)
     .first()
+
+  // If we're at exactly /forms/:formId (with or without trailing slash), redirect to submissions
+  const url = new URL(request.url)
+  const pathname = url.pathname.replace(/\/$/, "") // Remove trailing slash
+  if (pathname === `/forms/${params.formId}`) {
+    return redirect(`/forms/${params.formId}/submissions`)
+  }
 
   return {
     form: result as Form
@@ -50,7 +57,7 @@ export default function FormLayout() {
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
               <BreadcrumbLink href="/">
-                OpenForm
+                FormZero
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />

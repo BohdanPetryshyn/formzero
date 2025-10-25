@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "openform",
+	"name": "formzero",
 	"compatibility_date": "2025-04-04",
 	"main": "./workers/app.ts",
 	"vars": {
@@ -12,8 +12,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "openform",
-			"database_id": "openform",
+			"database_name": "formzero",
+			"database_id": "formzero",
 		}
 	]
 }

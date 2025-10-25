@@ -34,7 +34,7 @@ export function AppSidebar({ forms, ...props }: AppSidebarProps) {
                 <FileText className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">OpenForm</span>
+                <span className="truncate font-semibold">FormZero</span>
                 <span className="truncate text-xs text-muted-foreground">Form Backend</span>
               </div>
             </SidebarMenuButton>

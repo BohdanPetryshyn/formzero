@@ -1,4 +1,4 @@
-import { Outlet, redirect, useLoaderData, useLocation, useParams } from "react-router"
+import { Outlet, redirect, useLoaderData } from "react-router"
 import type { Route } from "./+types/forms"
 import type { Form } from "#/types/form"
 import { AppSidebar } from "#/components/app-sidebar"
@@ -8,7 +8,7 @@ import {
 } from "#/components/ui/sidebar"
 import { CreateFirstForm } from "#/components/create-first-form"
 
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const db = context.cloudflare.env.DB
 
   // Fetch all forms
@@ -16,9 +16,16 @@ export async function loader({ context }: Route.LoaderArgs) {
     .prepare("SELECT id, name FROM forms ORDER BY created_at DESC")
     .all()
 
-  return {
-    forms: result.results as Form[],
+  const forms = result.results as Form[]
+
+  // If we're at exactly /forms (with or without trailing slash) and forms exist, redirect to first form's submissions
+  const url = new URL(request.url)
+  const pathname = url.pathname.replace(/\/$/, "") // Remove trailing slash
+  if (pathname === "/forms" && forms.length > 0) {
+    return redirect(`/forms/${forms[0].id}/submissions`)
   }
+
+  return { forms }
 }
 
 export async function action({ request, context }: Route.ActionArgs) {

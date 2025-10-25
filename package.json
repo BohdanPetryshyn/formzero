@@ -1,10 +1,10 @@
 {
-	"name": "openform",
+	"name": "formzero",
 	"private": true,
 	"type": "module",
 	"scripts": {
 		"build": "react-router build",
-		"migrate": "yes Y | wrangler d1 migrations apply openform",
+		"migrate": "yes Y | wrangler d1 migrations apply formzero",
 		"cf-typegen": "wrangler types",
 		"deploy": "npm run build && wrangler deploy",
 		"dev": "react-router dev",

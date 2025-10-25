@@ -17,7 +17,7 @@ const errorMessages = {
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Error - OpenForm" },
+    { title: "Error - FormZero" },
     { name: "description", content: "An error occurred while processing your request." },
   ];
 }

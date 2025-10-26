@@ -6,6 +6,13 @@ import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { authClient } from "#/lib/auth.client";
 
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: "Login | FormZero" },
+    { name: "description", content: "Sign in to your FormZero account" },
+  ];
+};
+
 export async function loader({ request, context }: Route.LoaderArgs) {
   const database = context.cloudflare.env.DB;
   const auth = getAuth({ database });

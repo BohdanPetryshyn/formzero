@@ -11,6 +11,13 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Inbox, TrendingUp, TrendingDown, Download } from "lucide-react"
 import type { ChartConfig } from "~/components/ui/chart"
 
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: `Submissions | FormZero` },
+    { name: "description", content: "View and manage form submissions" },
+  ];
+};
+
 export async function loader({ params, context }: Route.LoaderArgs) {
   const { formId } = params
   const db = context.cloudflare.env.DB

@@ -14,6 +14,13 @@ import {
 } from "#/components/ui/sidebar"
 import type { Form } from "#/types/form";
 
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: `Form | FormZero` },
+    { name: "description", content: "Manage your form submissions" },
+  ];
+};
+
 export async function loader({ context, params, request }: Route.LoaderArgs) {
   const db = context.cloudflare.env.DB
 

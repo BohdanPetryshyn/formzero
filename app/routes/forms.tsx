@@ -22,7 +22,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
   // Fetch all forms
   const result = await database
-    .prepare("SELECT id, name FROM forms ORDER BY created_at DESC")
+    .prepare("SELECT id, name FROM forms ORDER BY created_at ASC")
     .all()
 
   const forms = result.results as Form[]

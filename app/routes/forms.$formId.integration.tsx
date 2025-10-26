@@ -1,10 +1,18 @@
 import { useState } from "react"
 import { useParams } from "react-router"
+import type { Route } from "./+types/forms.$formId.integration"
 import { Copy, Check } from "lucide-react"
 import { Highlight, themes } from "prism-react-renderer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Button } from "~/components/ui/button"
+
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: "Integration | FormZero" },
+    { name: "description", content: "Integrate your form with HTML, JavaScript, or React" },
+  ];
+};
 
 export default function IntegrationPage() {
   const params = useParams()

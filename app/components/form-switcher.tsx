@@ -1,5 +1,5 @@
 import * as React from "react"
-import { ChevronsUpDown, FileText, Plus } from "lucide-react"
+import { ChevronsUpDown, Plus } from "lucide-react"
 import { useFetcher, useLocation, useNavigate, useParams } from "react-router"
 import type { Form } from "#/types/form"
 import {
@@ -57,9 +57,7 @@ export function FormSwitcher({ forms }: FormSwitcherProps) {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <FileText className="size-4" />
-              </div>
+              <img src="/favicon.svg" alt="" className="size-8 rounded-lg" />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{activeForm.name}</span>
                 <span className="truncate text-xs">{activeForm.id}</span>
@@ -82,9 +80,7 @@ export function FormSwitcher({ forms }: FormSwitcherProps) {
                 onClick={() => navigate(`/forms/${form.id}/submissions`)}
                 className="gap-2 p-2"
               >
-                <div className="flex size-6 items-center justify-center rounded-md border">
-                  <FileText className="size-3.5 shrink-0" />
-                </div>
+                <img src="/favicon.svg" alt="" className="size-6 rounded-md shrink-0" />
                 {form.name}
               </DropdownMenuItem>
             ))}

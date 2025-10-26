@@ -5,6 +5,13 @@ import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
 import { getAuth } from "~/lib/auth.server"
 
+export const meta: Route.MetaFunction = () => {
+  return [
+    { title: "Create Your First Form | FormZero" },
+    { name: "description", content: "Create your first form to start collecting submissions" },
+  ];
+};
+
 export async function loader({ context, request }: Route.LoaderArgs) {
   const database = context.cloudflare.env.DB
 

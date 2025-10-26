@@ -8,7 +8,7 @@ import { Button } from "~/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "~/components/ui/chart"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
-import { Inbox, TrendingUp, TrendingDown } from "lucide-react"
+import { Inbox, TrendingUp, TrendingDown, Download } from "lucide-react"
 import type { ChartConfig } from "~/components/ui/chart"
 
 export async function loader({ params, context }: Route.LoaderArgs) {
@@ -97,6 +97,51 @@ export default function SubmissionsPage() {
   // Generate columns based on submission data
   const columns = createColumns(submissions)
 
+  const exportToCSV = () => {
+    if (submissions.length === 0) return
+
+    // Helper to escape CSV values
+    const escapeCSV = (value: any) => {
+      const stringValue = value !== undefined && value !== null ? String(value) : ''
+      // Always wrap in quotes if contains comma, quote, or newline
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`
+      }
+      return stringValue
+    }
+
+    // Get all unique keys from all submissions
+    const allKeys = new Set<string>()
+    submissions.forEach(sub => {
+      Object.keys(sub.data).forEach(key => allKeys.add(key))
+    })
+    const dataKeys = Array.from(allKeys).sort()
+
+    // Create CSV headers
+    const headers = ['ID', 'Created At', ...dataKeys]
+
+    // Create CSV rows
+    const rows = submissions.map(sub => {
+      const date = new Date(sub.created_at).toLocaleString()
+      const dataValues = dataKeys.map(key => escapeCSV(sub.data[key]))
+      return [escapeCSV(sub.id), escapeCSV(date), ...dataValues].join(',')
+    })
+
+    // Combine headers and rows
+    const csv = [headers.join(','), ...rows].join('\n')
+
+    // Download CSV
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `submissions-${new Date().toISOString().split('T')[0]}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="flex flex-1 flex-col gap-2 min-w-0">
       <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 min-w-0">
@@ -181,7 +226,21 @@ export default function SubmissionsPage() {
           </Empty>
         </div>
       ) : (
-        <DataTable columns={columns} data={submissions} />
+        <DataTable
+          columns={columns}
+          data={submissions}
+          headerAction={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToCSV}
+              className="h-9 gap-1.5 text-xs"
+            >
+              <Download className="h-3 w-3" />
+              Export CSV
+            </Button>
+          }
+        />
       )}
     </div>
   )

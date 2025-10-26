@@ -18,22 +18,38 @@ import {
   TableHeader,
   TableRow,
 } from "#/components/ui/table"
+import { Input } from "~/components/ui/input"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  headerAction?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  headerAction,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "created_at", desc: true }, // Default sort by created_at descending
   ])
+  const [searchQuery, setSearchQuery] = React.useState("")
+
+  // Filter data based on search query across all fields
+  const filteredData = React.useMemo(() => {
+    if (!searchQuery.trim()) return data
+
+    const query = searchQuery.toLowerCase()
+    return data.filter((item) => {
+      // Search across all values in the object
+      const searchableString = JSON.stringify(item).toLowerCase()
+      return searchableString.includes(query)
+    })
+  }, [data, searchQuery])
 
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -44,7 +60,16 @@ export function DataTable<TData, TValue>({
   })
 
   return (
-    <div className="space-y-4 min-w-0">
+    <div className="space-y-2 min-w-0">
+      <div className="flex items-center justify-between gap-2">
+        <Input
+          placeholder="Search submissions..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+        {headerAction && <div className="flex items-center gap-2">{headerAction}</div>}
+      </div>
       <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
@@ -96,7 +121,9 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="text-muted-foreground text-sm">
-        {data.length} total submission(s)
+        {filteredData.length === data.length
+          ? `${data.length} total submission(s)`
+          : `${filteredData.length} of ${data.length} submission(s)`}
       </div>
     </div>
   )

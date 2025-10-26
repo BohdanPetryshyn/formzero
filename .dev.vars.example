@@ -1,0 +1,1 @@
+BETTER_AUTH_SECRET=your-secret # Use https://jwtsecrets.com with default settings (32 characters)

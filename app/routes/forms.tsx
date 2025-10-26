@@ -7,12 +7,22 @@ import {
   SidebarProvider,
 } from "#/components/ui/sidebar"
 import { CreateFirstForm } from "#/components/create-first-form"
+import { getAuth } from "~/lib/auth.server"
 
 export async function loader({ context, request }: Route.LoaderArgs) {
-  const db = context.cloudflare.env.DB
+  const database = context.cloudflare.env.DB
+
+  // Redirect to login if not authenticated
+  const auth = getAuth({ database });
+  const session = await auth.api.getSession({
+      headers: request.headers
+  });
+  if (!session?.user) {
+    return redirect("/login");
+  }
 
   // Fetch all forms
-  const result = await db
+  const result = await database
     .prepare("SELECT id, name FROM forms ORDER BY created_at DESC")
     .all()
 
@@ -25,7 +35,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     return redirect(`/forms/${forms[0].id}/submissions`)
   }
 
-  return { forms }
+  return { forms, user: session.user }
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
@@ -67,7 +77,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 }
 
 export default function Forms() {
-  const { forms } = useLoaderData<typeof loader>()
+  const { forms, user } = useLoaderData<typeof loader>()
 
   // Show empty state when there are no forms
   if (forms.length === 0) {
@@ -76,7 +86,7 @@ export default function Forms() {
 
   return (
     <SidebarProvider>
-      <AppSidebar forms={forms} />
+      <AppSidebar forms={forms} user={user} />
       <SidebarInset>
         <Outlet />
       </SidebarInset>

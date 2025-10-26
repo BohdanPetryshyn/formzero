@@ -1,9 +1,35 @@
-import { useFetcher } from "react-router"
+import { redirect, useFetcher } from "react-router"
+import type { Route } from "./+types/setup"
 import { Button } from "#/components/ui/button"
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
+import { getAuth } from "~/lib/auth.server"
 
-export function CreateFirstForm() {
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const database = context.cloudflare.env.DB
+
+  // Redirect to login if not authenticated
+  const auth = getAuth({ database })
+  const session = await auth.api.getSession({
+    headers: request.headers
+  })
+  if (!session?.user) {
+    return redirect("/login")
+  }
+
+  // Check if forms exist - if they do, redirect to /forms
+  const result = await database
+    .prepare("SELECT id FROM forms LIMIT 1")
+    .first()
+
+  if (result) {
+    return redirect("/forms")
+  }
+
+  return {}
+}
+
+export default function Setup() {
   const fetcher = useFetcher<{ error?: string }>()
 
   return (

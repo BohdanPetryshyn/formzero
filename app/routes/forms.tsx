@@ -1,4 +1,4 @@
-import { Outlet, redirect, useLoaderData } from "react-router"
+import { data, Outlet, redirect, useLoaderData } from "react-router"
 import type { Route } from "./+types/forms"
 import type { Form } from "#/types/form"
 import { AppSidebar } from "#/components/app-sidebar"
@@ -6,7 +6,6 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "#/components/ui/sidebar"
-import { CreateFirstForm } from "#/components/create-first-form"
 import { getAuth } from "~/lib/auth.server"
 
 export async function loader({ context, request }: Route.LoaderArgs) {
@@ -28,10 +27,15 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
   const forms = result.results as Form[]
 
+  // If no forms exist, redirect to create first form
+  if (forms.length === 0) {
+    return redirect("/setup")
+  }
+
   // If we're at exactly /forms (with or without trailing slash) and forms exist, redirect to first form's submissions
   const url = new URL(request.url)
   const pathname = url.pathname.replace(/\/$/, "") // Remove trailing slash
-  if (pathname === "/forms" && forms.length > 0) {
+  if (pathname === "/forms") {
     return redirect(`/forms/${forms[0].id}/submissions`)
   }
 
@@ -39,7 +43,17 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
-  const db = context.cloudflare.env.DB
+  const database = context.cloudflare.env.DB
+
+  // Redirect to login if not authenticated
+  const auth = getAuth({ database });
+  const session = await auth.api.getSession({
+      headers: request.headers
+  });
+  if (!session?.user) {
+    return data({ error: "Not Authorized" }, { status: 401 });
+  }
+
   const formData = await request.formData()
 
   const name = formData.get("name") as string
@@ -55,7 +69,7 @@ export async function action({ request, context }: Route.ActionArgs) {
     .replace(/^-+|-+$/g, "")
 
   // Check if form with this ID already exists
-  const existing = await db
+  const existing = await database
     .prepare("SELECT id FROM forms WHERE id = ?")
     .bind(id)
     .first()
@@ -66,7 +80,7 @@ export async function action({ request, context }: Route.ActionArgs) {
 
   const createdAt = Date.now()
 
-  await db
+  await database
     .prepare(
       "INSERT INTO forms (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
     )
@@ -78,11 +92,6 @@ export async function action({ request, context }: Route.ActionArgs) {
 
 export default function Forms() {
   const { forms, user } = useLoaderData<typeof loader>()
-
-  // Show empty state when there are no forms
-  if (forms.length === 0) {
-    return <CreateFirstForm />
-  }
 
   return (
     <SidebarProvider>

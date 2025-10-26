@@ -31,7 +31,13 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const formData = await request.formData();
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
   const name = formData.get("name") as string;
+
+  // Validate passwords match
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" };
+  }
 
   try {
     const { error: signUpError } = await authClient.signUp.email({
@@ -61,9 +67,9 @@ export default function Signup() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Create Your Account</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Set up your form backend in seconds
+          <h1 className="text-3xl font-bold">Welcome to FormZero</h1>
+          <p className="mt-2 text-muted-foreground">
+            Create your account to get started
           </p>
         </div>
 
@@ -108,6 +114,24 @@ export default function Signup() {
                 disabled={isSubmitting}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                placeholder="Re-enter your password"
+                minLength={8}
+                autoComplete="new-password"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+            <strong>Important:</strong> Please remember your password. Password recovery is not available yet.
           </div>
 
           {actionData?.error && (

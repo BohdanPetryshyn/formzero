@@ -1,5 +1,4 @@
 import { useFetcher } from "react-router"
-import { FileText } from "lucide-react"
 import { Button } from "#/components/ui/button"
 import { Input } from "#/components/ui/input"
 import { Label } from "#/components/ui/label"
@@ -11,15 +10,12 @@ export function CreateFirstForm() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center text-center space-y-4">
-          <div className="bg-primary text-primary-foreground flex aspect-square size-16 items-center justify-center rounded-2xl">
-            <FileText className="size-8" />
-          </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Welcome to FormZero
+            <h1 className="text-3xl font-bold">
+              Create Your First Form
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Create your first form to start collecting submissions
+            <p className="mt-2 text-muted-foreground">
+              Start collecting submissions in seconds
             </p>
           </div>
         </div>
@@ -27,7 +23,7 @@ export function CreateFirstForm() {
         <fetcher.Form method="post" action="/forms" className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-base">
+              <Label htmlFor="name">
                 Form Name
               </Label>
               <Input
@@ -35,7 +31,6 @@ export function CreateFirstForm() {
                 name="name"
                 placeholder="Contact Form"
                 required
-                className="h-12 text-base"
                 autoFocus
               />
               {fetcher.data && "error" in fetcher.data && (
@@ -49,8 +44,7 @@ export function CreateFirstForm() {
           <Button
             type="submit"
             disabled={fetcher.state === "submitting"}
-            className="w-full h-12 text-base"
-            size="lg"
+            className="w-full"
           >
             {fetcher.state === "submitting" ? "Creating..." : "Create Form"}
           </Button>

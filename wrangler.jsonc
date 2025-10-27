@@ -6,6 +6,11 @@
 	"observability": {
 		"enabled": true
 	},
+	"vars": {
+		"BETTER_AUTH_SECRET": {
+			"description": "Secret for authentication system. No need to remember it. Use https://jwtsecrets.com to generate a secure secret (32 characters)"
+		}
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",

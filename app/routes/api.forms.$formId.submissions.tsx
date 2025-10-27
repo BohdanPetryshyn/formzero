@@ -1,13 +1,40 @@
 import type { Route } from "./+types/api.forms.$formId.submissions";
 import { data, redirect } from "react-router";
 
+// CORS headers to allow submissions from any domain
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Accept",
+  "Access-Control-Max-Age": "86400",
+};
+
+// Handle preflight OPTIONS requests
+export async function loader({ request }: Route.LoaderArgs) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
+  }
+
+  // For non-OPTIONS requests to this endpoint, return method not allowed
+  return data(
+    { error: "Method not allowed" },
+    { status: 405, headers: corsHeaders }
+  );
+}
+
 export async function action({ request, params, context }: Route.ActionArgs) {
   const { formId } = params;
   const db = context.cloudflare.env.DB;
 
   // Determine if this is a JSON request (used throughout)
+  const contentType = request.headers.get("content-type") || "";
   const acceptHeader = request.headers.get("accept") || "";
-  const isJsonRequest = acceptHeader.includes("application/json");
+  const isJsonRequest =
+    acceptHeader.includes("application/json") ||
+    contentType.includes("application/json");
 
   try {
     // Check if form exists
@@ -20,14 +47,13 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       if (isJsonRequest) {
         return data(
           { success: false, error: "Form not found" },
-          { status: 404 }
+          { status: 404, headers: corsHeaders }
         );
       }
       return redirect("/error?error=form_not_found");
     }
 
     // Parse request body based on content type
-    const contentType = request.headers.get("content-type") || "";
     let submissionData: Record<string, any>;
 
     if (contentType.includes("application/json")) {
@@ -42,7 +68,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       if (isJsonRequest) {
         return data(
           { success: false, error: "Unsupported content type" },
-          { status: 415 }
+          { status: 415, headers: corsHeaders }
         );
       }
       return redirect("/error?error=unsupported_content_type");
@@ -64,7 +90,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       // Return JSON response
       return data(
         { success: true, id: submissionId },
-        { status: 201 }
+        { status: 201, headers: corsHeaders }
       );
     } else {
       // Handle redirect for HTML form submissions
@@ -90,7 +116,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     if (isJsonRequest) {
       return data(
         { success: false, error: "Failed to process submission" },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     } else {
       return redirect("/error?error=internal_error");

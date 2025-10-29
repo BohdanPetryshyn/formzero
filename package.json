@@ -58,5 +58,12 @@
 		"vite": "^7.1.7",
 		"vite-tsconfig-paths": "^5.1.4",
 		"wrangler": "^4.45.0"
-	}
+	},
+	"cloudflare": {
+      "bindings": {
+        "BETTER_AUTH_SECRET": {
+          "description": "Secret for authentication system. Use https://jwtsecrets.com or `openssl rand -hex 16` to generate a secure secret (32 characters). No need to remember it"
+        }
+      }
+  }
 }

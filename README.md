@@ -60,7 +60,7 @@ Here's what happens when you click the button:
 2. You provide configuration options:
    - **Project name** (e.g. "formzero")
    - **Database name** (e.g. "formzero")
-   - **Auth secret** (use [jwtsecrets.com](https://jwtsecrets.com) to generate one)
+   - **Auth secret** (use [jwtsecrets.com](https://jwtsecrets.com) or `openssl rand -hex 16` to generate one)
 3. Cloudflare builds and deploys FormZero to your account
 4. You get a unique URL (e.g. `https://formzero.your-domain.workers.dev`) to access your dashboard
 

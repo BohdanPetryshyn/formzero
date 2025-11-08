@@ -84,6 +84,7 @@ export default function SettingsPage() {
   const { settings, formId } = useLoaderData<typeof loader>()
   const fetcher = useFetcher()
   const testFetcher = useFetcher()
+  const clearFetcher = useFetcher()
 
   const [email, setEmail] = useState(settings?.notification_email || "")
   const [password, setPassword] = useState(settings?.notification_email_password || "")
@@ -140,6 +141,9 @@ export default function SettingsPage() {
   const isTesting = testFetcher.state === "submitting"
   const testSuccess = testFetcher.state === "idle" && testFetcher.data?.success && testResultValid
 
+  const isClearing = clearFetcher.state === "submitting"
+  const isCleared = clearFetcher.state === "idle" && clearFetcher.data?.success
+
   // Track when test succeeds
   useEffect(() => {
     if (testSuccess) {
@@ -153,6 +157,21 @@ export default function SettingsPage() {
     setTestResultValid(false)
   }, [email, password, smtpHost, smtpPort])
 
+  // Handle successful settings clear
+  useEffect(() => {
+    if (clearFetcher.state === "idle" && clearFetcher.data?.success) {
+      // Reset all form fields
+      setEmail("")
+      setPassword("")
+      setSmtpHost("")
+      setSmtpPort("")
+      setEmailDomain(null)
+      setSmtpConfig(null)
+      setTestPassed(false)
+      setTestResultValid(false)
+    }
+  }, [clearFetcher.state, clearFetcher.data])
+
   const handleTestEmail = () => {
     setTestResultValid(true)
 
@@ -165,6 +184,13 @@ export default function SettingsPage() {
     testFetcher.submit(formData, {
       method: "post",
       action: `/forms/${formId}/settings/notifications/test`
+    })
+  }
+
+  const handleDisableNotifications = () => {
+    clearFetcher.submit(null, {
+      method: "delete",
+      action: `/forms/${formId}/settings/notifications`
     })
   }
 
@@ -274,38 +300,56 @@ export default function SettingsPage() {
                       </p>
                     )}
                     <TooltipProvider>
-                      <div className="flex gap-2">
-                        <ResultButton
-                          type="button"
-                          variant="outline"
-                          isSubmitting={isTesting}
-                          isSuccess={testSuccess}
-                          loadingText="Sending..."
-                          successText="Test email sent!"
-                          disabled={!email || !password || !smtpHost || !smtpPort}
-                          onClick={handleTestEmail}
-                        >
-                          Send test email
-                        </ResultButton>
-                        <Tooltip open={!testPassed ? undefined : false}>
-                          <TooltipTrigger asChild>
-                            <span>
-                              <ResultButton
-                                type="submit"
-                                isSubmitting={isSaving}
-                                isSuccess={isSaved}
-                                loadingText="Saving..."
-                                successText="Saved!"
-                                disabled={!testPassed}
-                              >
-                                Save Settings
-                              </ResultButton>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Send a test email first to verify your settings</p>
-                          </TooltipContent>
-                        </Tooltip>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <ResultButton
+                            type="button"
+                            variant="outline"
+                            isSubmitting={isTesting}
+                            isSuccess={testSuccess}
+                            loadingText="Sending..."
+                            successText="Test email sent!"
+                            disabled={!email || !password || !smtpHost || !smtpPort}
+                            onClick={handleTestEmail}
+                            className="w-full sm:w-auto"
+                          >
+                            Send test email
+                          </ResultButton>
+                          <Tooltip open={!testPassed ? undefined : false}>
+                            <TooltipTrigger asChild>
+                              <span className="w-full sm:w-auto">
+                                <ResultButton
+                                  type="submit"
+                                  isSubmitting={isSaving}
+                                  isSuccess={isSaved}
+                                  loadingText="Saving..."
+                                  successText="Saved!"
+                                  disabled={!testPassed}
+                                  className="w-full sm:w-auto"
+                                >
+                                  Save Settings
+                                </ResultButton>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Send a test email first to verify your settings</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                        {settings && (
+                          <ResultButton
+                            type="button"
+                            variant="outline"
+                            isSubmitting={isClearing}
+                            isSuccess={isCleared}
+                            loadingText="Disabling..."
+                            successText="Disabled!"
+                            className="w-full sm:w-auto text-destructive hover:text-destructive"
+                            onClick={handleDisableNotifications}
+                          >
+                            Disable Notifications
+                          </ResultButton>
+                        )}
                       </div>
                     </TooltipProvider>
                   </div>

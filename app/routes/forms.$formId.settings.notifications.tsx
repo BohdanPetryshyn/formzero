@@ -2,6 +2,41 @@ import type { Route } from "./+types/forms.$formId.settings.notifications"
 import { data } from "react-router"
 
 export async function action({ request, params, context }: Route.ActionArgs) {
+  const { formId } = params
+  const db = context.cloudflare.env.DB
+
+  // Check if form exists
+  const form = await db
+    .prepare("SELECT id FROM forms WHERE id = ?")
+    .bind(formId)
+    .first()
+
+  if (!form) {
+    return data(
+      { success: false, error: "Form not found" },
+      { status: 404 }
+    )
+  }
+
+  // Handle DELETE request - clear settings
+  if (request.method === "DELETE") {
+    try {
+      await db
+        .prepare("DELETE FROM form_settings WHERE form_id = ?")
+        .bind(formId)
+        .run()
+
+      return data({ success: true }, { status: 200 })
+    } catch (error) {
+      console.error("Error clearing form settings:", error)
+      return data(
+        { success: false, error: "Failed to clear settings" },
+        { status: 500 }
+      )
+    }
+  }
+
+  // Handle POST request - save settings
   if (request.method !== "POST") {
     return data(
       { success: false, error: "Method not allowed" },
@@ -9,22 +44,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     )
   }
 
-  const { formId } = params
-  const db = context.cloudflare.env.DB
-
   try {
-    // Check if form exists
-    const form = await db
-      .prepare("SELECT id FROM forms WHERE id = ?")
-      .bind(formId)
-      .first()
-
-    if (!form) {
-      return data(
-        { success: false, error: "Form not found" },
-        { status: 404 }
-      )
-    }
 
     // Parse form data
     const formData = await request.formData()

@@ -11,6 +11,9 @@ export default [
     route(":formId", "routes/forms.$formId.tsx", [
       route("submissions", "routes/forms.$formId.submissions.tsx"),
       route("integration", "routes/forms.$formId.integration.tsx"),
+      route("settings", "routes/forms.$formId.settings.tsx"),
+      route("settings/notifications", "routes/forms.$formId.settings.notifications.tsx"),
+      route("settings/notifications/test", "routes/forms.$formId.settings.notifications.test.tsx"),
     ]),
   ]),
 

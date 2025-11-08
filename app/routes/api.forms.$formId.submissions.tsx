@@ -1,5 +1,7 @@
 import type { Route } from "./+types/api.forms.$formId.submissions";
 import { data, redirect } from "react-router";
+import { sendSubmissionNotification } from "~/lib/email.server";
+import type { EmailConfig } from "#/types/form-settings";
 
 // CORS headers to allow submissions from any domain
 const corsHeaders = {
@@ -85,6 +87,62 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       )
       .bind(submissionId, formId, JSON.stringify(submissionData), createdAt)
       .run();
+
+    // Send email notification asynchronously (don't await to avoid blocking response)
+    // This runs in the background after the response is sent
+    context.cloudflare.ctx.waitUntil(
+      (async () => {
+        try {
+          // Fetch form settings
+          const formSettings = await db
+            .prepare(
+              "SELECT notification_email, notification_email_password, smtp_host, smtp_port FROM form_settings WHERE form_id = ?"
+            )
+            .bind(formId)
+            .first<{
+              notification_email: string | null
+              notification_email_password: string | null
+              smtp_host: string | null
+              smtp_port: number | null
+            }>();
+
+          // Check if email notifications are configured
+          if (
+            formSettings?.notification_email &&
+            formSettings?.notification_email_password &&
+            formSettings?.smtp_host &&
+            formSettings?.smtp_port
+          ) {
+            // Fetch form name for email
+            const formData = await db
+              .prepare("SELECT name FROM forms WHERE id = ?")
+              .bind(formId)
+              .first<{ name: string }>();
+
+            if (formData) {
+              // Type-safe email config (null checks already done above)
+              const emailConfig: EmailConfig = {
+                notification_email: formSettings.notification_email,
+                notification_email_password: formSettings.notification_email_password,
+                smtp_host: formSettings.smtp_host,
+                smtp_port: formSettings.smtp_port,
+              };
+
+              await sendSubmissionNotification(emailConfig, {
+                id: submissionId,
+                formId: formId,
+                formName: formData.name,
+                data: submissionData,
+                createdAt: createdAt,
+              });
+            }
+          }
+        } catch (error) {
+          // Log error but don't fail the request
+          console.error("Failed to send email notification:", error);
+        }
+      })()
+    );
 
     if (isJsonRequest) {
       // Return JSON response

@@ -1,8 +1,13 @@
-import type { Route } from "./+types/forms.$formId.settings.notifications.test"
+import type { Route } from "./+types/settings.notifications.test"
 import { data } from "react-router"
 import { sendTestEmail } from "~/lib/email.server"
+import { requireAuth } from "~/lib/require-auth.server"
 
-export async function action({ request, params, context }: Route.ActionArgs) {
+export async function action({ context, request }: Route.ActionArgs) {
+  const database = context.cloudflare.env.DB
+
+  await requireAuth(request, database)
+
   if (request.method !== "POST") {
     return data(
       { success: false, error: "Method not allowed" },
@@ -10,23 +15,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     )
   }
 
-  const { formId } = params
-  const db = context.cloudflare.env.DB
-
   try {
-    // Check if form exists
-    const form = await db
-      .prepare("SELECT id FROM forms WHERE id = ?")
-      .bind(formId)
-      .first()
-
-    if (!form) {
-      return data(
-        { success: false, error: "Form not found" },
-        { status: 404 }
-      )
-    }
-
     // Parse form data
     const formData = await request.formData()
     const notification_email = formData.get("notification_email") as string

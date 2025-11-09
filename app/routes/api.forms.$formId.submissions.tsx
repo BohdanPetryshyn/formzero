@@ -1,7 +1,7 @@
 import type { Route } from "./+types/api.forms.$formId.submissions";
 import { data, redirect } from "react-router";
 import { sendSubmissionNotification } from "~/lib/email.server";
-import type { EmailConfig } from "#/types/form-settings";
+import type { EmailConfig } from "#/types/settings";
 
 // CORS headers to allow submissions from any domain
 const corsHeaders = {
@@ -93,12 +93,11 @@ export async function action({ request, params, context }: Route.ActionArgs) {
     context.cloudflare.ctx.waitUntil(
       (async () => {
         try {
-          // Fetch form settings
-          const formSettings = await db
+          // Fetch global settings
+          const globalSettings = await db
             .prepare(
-              "SELECT notification_email, notification_email_password, smtp_host, smtp_port FROM form_settings WHERE form_id = ?"
+              "SELECT notification_email, notification_email_password, smtp_host, smtp_port FROM settings WHERE id = 'global'"
             )
-            .bind(formId)
             .first<{
               notification_email: string | null
               notification_email_password: string | null
@@ -108,10 +107,10 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
           // Check if email notifications are configured
           if (
-            formSettings?.notification_email &&
-            formSettings?.notification_email_password &&
-            formSettings?.smtp_host &&
-            formSettings?.smtp_port
+            globalSettings?.notification_email &&
+            globalSettings?.notification_email_password &&
+            globalSettings?.smtp_host &&
+            globalSettings?.smtp_port
           ) {
             // Fetch form name for email
             const formData = await db
@@ -122,10 +121,10 @@ export async function action({ request, params, context }: Route.ActionArgs) {
             if (formData) {
               // Type-safe email config (null checks already done above)
               const emailConfig: EmailConfig = {
-                notification_email: formSettings.notification_email,
-                notification_email_password: formSettings.notification_email_password,
-                smtp_host: formSettings.smtp_host,
-                smtp_port: formSettings.smtp_port,
+                notification_email: globalSettings.notification_email,
+                notification_email_password: globalSettings.notification_email_password,
+                smtp_host: globalSettings.smtp_host,
+                smtp_port: globalSettings.smtp_port,
               };
 
               await sendSubmissionNotification(emailConfig, {

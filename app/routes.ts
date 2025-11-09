@@ -11,14 +11,14 @@ export default [
     route(":formId", "routes/forms.$formId.tsx", [
       route("submissions", "routes/forms.$formId.submissions.tsx"),
       route("integration", "routes/forms.$formId.integration.tsx"),
-      route("settings", "routes/forms.$formId.settings.tsx"),
-      route("settings/notifications", "routes/forms.$formId.settings.notifications.tsx"),
-      route("settings/notifications/test", "routes/forms.$formId.settings.notifications.test.tsx"),
     ]),
   ]),
+  route("settings/notifications", "routes/settings.notifications.tsx"),
+  route("settings/notifications/test", "routes/settings.notifications.test.tsx"),
 
   route("/api/auth/*", "routes/api.auth.$.tsx"),
   route("/api/forms/:formId/submissions", "routes/api.forms.$formId.submissions.tsx"),
+
   route("/success", "routes/success.tsx"),
   route("/error", "routes/error.tsx"),
 ] satisfies RouteConfig;

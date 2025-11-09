@@ -10,6 +10,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "~/components/
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Inbox, TrendingUp, TrendingDown, Download } from "lucide-react"
 import type { ChartConfig } from "~/components/ui/chart"
+import { requireAuth } from "~/lib/require-auth.server"
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -18,12 +19,14 @@ export const meta: Route.MetaFunction = () => {
   ];
 };
 
-export async function loader({ params, context }: Route.LoaderArgs) {
+export async function loader({ request, params, context }: Route.LoaderArgs) {
   const { formId } = params
-  const db = context.cloudflare.env.DB
+  const database = context.cloudflare.env.DB
+
+  await requireAuth(request, database)
 
   // Fetch all submissions for this form
-  const submissions = await db
+  const submissions = await database
     .prepare(
       "SELECT id, form_id, data, created_at FROM submissions WHERE form_id = ? ORDER BY created_at DESC"
     )

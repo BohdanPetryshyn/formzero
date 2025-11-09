@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer"
-import type { EmailConfig } from "#/types/form-settings"
+import type { EmailConfig } from "#/types/settings"
 import type { SubmissionEmailData } from "#/types/submission"
 
 /**

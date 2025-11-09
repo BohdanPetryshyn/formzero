@@ -1,34 +1,35 @@
-import type { Route } from "./+types/forms.$formId.settings.notifications"
+import { requireAuth } from "~/lib/require-auth.server"
+import type { Route } from "./+types/settings.notifications"
 import { data } from "react-router"
 
-export async function action({ request, params, context }: Route.ActionArgs) {
-  const { formId } = params
-  const db = context.cloudflare.env.DB
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const database = context.cloudflare.env.DB
 
-  // Check if form exists
-  const form = await db
-    .prepare("SELECT id FROM forms WHERE id = ?")
-    .bind(formId)
+  // Fetch global settings
+  const settings = await database
+    .prepare("SELECT * FROM settings WHERE id = 'global'")
     .first()
 
-  if (!form) {
-    return data(
-      { success: false, error: "Form not found" },
-      { status: 404 }
-    )
-  }
+  return data({
+    settings: settings || null,
+  })
+}
+
+export async function action({ request, context }: Route.ActionArgs) {
+  const database = context.cloudflare.env.DB
+
+  await requireAuth(request, database)
 
   // Handle DELETE request - clear settings
   if (request.method === "DELETE") {
     try {
-      await db
-        .prepare("DELETE FROM form_settings WHERE form_id = ?")
-        .bind(formId)
+      await database
+        .prepare("DELETE FROM settings WHERE id = 'global'")
         .run()
 
       return data({ success: true }, { status: 200 })
     } catch (error) {
-      console.error("Error clearing form settings:", error)
+      console.error("Error clearing settings:", error)
       return data(
         { success: false, error: "Failed to clear settings" },
         { status: 500 }
@@ -45,7 +46,6 @@ export async function action({ request, params, context }: Route.ActionArgs) {
   }
 
   try {
-
     // Parse form data
     const formData = await request.formData()
     const notification_email = formData.get("notification_email") as string
@@ -61,55 +61,49 @@ export async function action({ request, params, context }: Route.ActionArgs) {
       )
     }
 
-    // Check if settings already exist for this form
-    const existingSettings = await db
-      .prepare("SELECT id FROM form_settings WHERE form_id = ?")
-      .bind(formId)
+    // Check if global settings already exist
+    const existingSettings = await database
+      .prepare("SELECT id FROM settings WHERE id = 'global'")
       .first()
 
     const updatedAt = Date.now()
 
     if (existingSettings) {
       // Update existing settings
-      await db
+      await database
         .prepare(`
-          UPDATE form_settings
+          UPDATE settings
           SET notification_email = ?,
               notification_email_password = ?,
               smtp_host = ?,
               smtp_port = ?,
               smtp_secure = 1,
               updated_at = ?
-          WHERE form_id = ?
+          WHERE id = 'global'
         `)
         .bind(
           notification_email,
           notification_email_password,
           smtp_host,
           parseInt(smtp_port, 10),
-          updatedAt,
-          formId
+          updatedAt
         )
         .run()
     } else {
-      // Create new settings
-      const settingsId = crypto.randomUUID()
-      await db
+      // Create new global settings
+      await database
         .prepare(`
-          INSERT INTO form_settings (
+          INSERT INTO settings (
             id,
-            form_id,
             notification_email,
             notification_email_password,
             smtp_host,
             smtp_port,
             smtp_secure,
             updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, 1, ?)
+          ) VALUES ('global', ?, ?, ?, ?, 1, ?)
         `)
         .bind(
-          settingsId,
-          formId,
           notification_email,
           notification_email_password,
           smtp_host,
@@ -121,7 +115,7 @@ export async function action({ request, params, context }: Route.ActionArgs) {
 
     return data({ success: true }, { status: 200 })
   } catch (error) {
-    console.error("Error saving form settings:", error)
+    console.error("Error saving settings:", error)
     return data(
       { success: false, error: "Failed to save settings" },
       { status: 500 }

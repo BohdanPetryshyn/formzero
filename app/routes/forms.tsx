@@ -1,4 +1,4 @@
-import { data, Outlet, redirect, useLoaderData } from "react-router"
+import { Outlet, redirect, useLoaderData } from "react-router"
 import type { Route } from "./+types/forms"
 import type { Form } from "#/types/form"
 import { AppSidebar } from "#/components/app-sidebar"
@@ -6,19 +6,12 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "#/components/ui/sidebar"
-import { getAuth } from "~/lib/auth.server"
+import { requireAuth } from "~/lib/require-auth.server"
 
 export async function loader({ context, request }: Route.LoaderArgs) {
   const database = context.cloudflare.env.DB
 
-  // Redirect to login if not authenticated
-  const auth = getAuth({ database });
-  const session = await auth.api.getSession({
-      headers: request.headers
-  });
-  if (!session?.user) {
-    return redirect("/login");
-  }
+  const user = await requireAuth(request, database)
 
   // Fetch all forms
   const result = await database
@@ -39,20 +32,13 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     return redirect(`/forms/${forms[0].id}/submissions`)
   }
 
-  return { forms, user: session.user }
+  return { forms, user }
 }
 
 export async function action({ request, context }: Route.ActionArgs) {
   const database = context.cloudflare.env.DB
 
-  // Redirect to login if not authenticated
-  const auth = getAuth({ database });
-  const session = await auth.api.getSession({
-      headers: request.headers
-  });
-  if (!session?.user) {
-    return data({ error: "Not Authorized" }, { status: 401 });
-  }
+  await requireAuth(request, database)
 
   const formData = await request.formData()
 

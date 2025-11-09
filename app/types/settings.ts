@@ -1,6 +1,5 @@
-export type FormSettings = {
+export type Settings = {
   id: string
-  form_id: string
   notification_email: string | null
   notification_email_password: string | null
   smtp_host: string | null

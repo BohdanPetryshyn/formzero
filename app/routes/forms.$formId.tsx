@@ -13,6 +13,7 @@ import {
   SidebarTrigger,
 } from "#/components/ui/sidebar"
 import type { Form } from "#/types/form";
+import { requireAuth } from "~/lib/require-auth.server";
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -22,10 +23,12 @@ export const meta: Route.MetaFunction = () => {
 };
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
-  const db = context.cloudflare.env.DB
+  const database = context.cloudflare.env.DB
+
+  await requireAuth(request, database)
 
   // Fetch form details
-  const result = await db
+  const result = await database
     .prepare("SELECT id, name FROM forms WHERE id = ?")
     .bind(params.formId)
     .first()

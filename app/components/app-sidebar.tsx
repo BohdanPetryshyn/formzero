@@ -1,8 +1,9 @@
+import { useState, useEffect } from "react"
 import type { Form } from "#/types/form"
 import type { User } from "#/types/user"
 import { FormSwitcher } from "#/components/form-switcher"
 import { FormNav } from "#/components/form-nav"
-import { LogOut, MoreHorizontal } from "lucide-react"
+import { LogOut, MoreHorizontal, Settings } from "lucide-react"
 import { useFetcher } from "react-router"
 import {
   Sidebar,
@@ -20,6 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "#/components/ui/dropdown-menu"
+import { SettingsDialog } from "#/components/settings-dialog"
+import type { Settings as SettingsType } from "#/types/settings"
 
 type AppSidebarProps = {
   forms: Form[]
@@ -29,6 +32,24 @@ type AppSidebarProps = {
 export function AppSidebar({ forms, user, ...props }: AppSidebarProps) {
   const userInitial = user.name.charAt(0).toUpperCase()
   const fetcher = useFetcher()
+  const settingsFetcher = useFetcher()
+
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settings, setSettings] = useState<SettingsType | null>(null)
+
+  // Fetch settings when dialog opens
+  useEffect(() => {
+    if (settingsOpen && !settingsFetcher.data && settingsFetcher.state === "idle") {
+      settingsFetcher.load("/settings/notifications")
+    }
+  }, [settingsOpen])
+
+  // Update settings when fetcher returns data
+  useEffect(() => {
+    if (settingsFetcher.data?.settings) {
+      setSettings(settingsFetcher.data.settings)
+    }
+  }, [settingsFetcher.data])
 
   const handleLogout = () => {
     fetcher.submit(null, { method: "post", action: "/logout" })
@@ -64,6 +85,10 @@ export function AppSidebar({ forms, user, ...props }: AppSidebarProps) {
                 align="end"
                 sideOffset={4}
               >
+                <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
+                  <Settings />
+                  Settings
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
                   Log out
@@ -74,6 +99,12 @@ export function AppSidebar({ forms, user, ...props }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
+
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        settings={settings}
+      />
     </Sidebar>
   )
 }

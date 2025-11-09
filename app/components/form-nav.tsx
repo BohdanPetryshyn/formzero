@@ -1,4 +1,4 @@
-import { Database, Puzzle, Settings } from "lucide-react"
+import { Database, Puzzle } from "lucide-react"
 import { NavLink, useParams } from "react-router"
 
 import {
@@ -27,11 +27,6 @@ export function FormNav() {
       title: "Integration",
       url: `/forms/${formId}/integration`,
       icon: Puzzle,
-    },
-    {
-      title: "Settings",
-      url: `/forms/${formId}/settings`,
-      icon: Settings,
     },
   ]
 

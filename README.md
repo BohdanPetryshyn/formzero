@@ -88,13 +88,11 @@ That's it! FormZero will use Resend to send notifications to the email you confi
 
 ### Option 2: SMTP
 
-If you prefer to use your own email provider:
+If you don't have a Resend API key configured, you can use your own email provider:
 
 1. Go to your form's **Settings** → **Notifications**
 2. Enter your email address and SMTP credentials
 3. FormZero auto-detects settings for Gmail, Outlook, Yahoo, and iCloud
-
-**Note**: If both Resend and SMTP are configured, Resend takes priority.
 
 <br/>
 

@@ -43,6 +43,7 @@
 		"react-dom": "^19.2.4",
 		"react-router": "^7.13.0",
 		"recharts": "^2.15.4",
+		"resend": "^6.7.0",
 		"tailwind-merge": "^3.4.0"
 	},
 	"devDependencies": {
@@ -66,6 +67,9 @@
 		"bindings": {
 			"BETTER_AUTH_SECRET": {
 				"description": "Secret for authentication system. Use https://jwtsecrets.com or `openssl rand -hex 16` to generate a secure secret (32 characters). No need to remember it"
+			},
+			"RESEND_API_KEY": {
+				"description": "(Optional) Resend API key for email notifications. Get one free at https://resend.com. Leave empty to use SMTP instead"
 			}
 		}
 	}

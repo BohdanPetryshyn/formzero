@@ -1,6 +1,18 @@
 import nodemailer from "nodemailer"
+import { Resend } from "resend"
 import type { EmailConfig } from "#/types/settings"
 import type { SubmissionEmailData } from "#/types/submission"
+
+/**
+ * Email notification options for form submissions.
+ * Resend takes priority if API key is provided, otherwise falls back to SMTP.
+ */
+export type EmailNotificationOptions = {
+  resendApiKey?: string
+  resendFromEmail?: string
+  recipientEmail: string
+  smtpConfig?: EmailConfig
+}
 
 /**
  * Sends a test email to verify SMTP settings
@@ -377,4 +389,198 @@ function escapeHtml(text: string): string {
     "'": '&#039;',
   }
   return text.replace(/[&<>"']/g, (m) => map[m])
+}
+
+/**
+ * Generates the HTML email body for submission notifications.
+ * Shared between SMTP and Resend implementations.
+ */
+function generateSubmissionEmailHtml(submission: SubmissionEmailData): string {
+  const submissionHtml = formatSubmissionData(submission.data)
+  const timestamp = new Date(submission.createdAt).toLocaleString('en-US', {
+    dateStyle: 'full',
+    timeStyle: 'long',
+  })
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Form Submission</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #252525; padding: 32px; text-align: center; border-bottom: 1px solid rgba(0, 0, 0, 0.1);">
+              <h1 style="margin: 0; color: #fafafa; font-size: 24px; font-weight: 600; letter-spacing: -0.5px;">
+                New Form Submission
+              </h1>
+              <p style="margin: 8px 0 0 0; color: #b4b4b4; font-size: 16px;">
+                ${submission.formName}
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 32px;">
+
+              <!-- Introduction -->
+              <p style="margin: 0 0 24px 0; color: #252525; font-size: 16px; line-height: 1.6;">
+                You have received a new submission for your form <strong>${submission.formName}</strong>.
+              </p>
+
+              <!-- Metadata -->
+              <div style="background-color: #fafafa; border-left: 4px solid #252525; padding: 16px; margin-bottom: 32px; border-radius: 6px;">
+                <table width="100%" cellpadding="4" cellspacing="0">
+                  <tr>
+                    <td style="color: #8e8e8e; font-size: 14px; font-weight: 500; padding: 4px 0;">Submission ID:</td>
+                    <td style="color: #252525; font-size: 14px; font-family: 'Courier New', monospace; padding: 4px 0;">${submission.id}</td>
+                  </tr>
+                  <tr>
+                    <td style="color: #8e8e8e; font-size: 14px; font-weight: 500; padding: 4px 0;">Received:</td>
+                    <td style="color: #252525; font-size: 14px; padding: 4px 0;">${timestamp}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- Submission Data -->
+              <h2 style="margin: 0 0 16px 0; color: #252525; font-size: 18px; font-weight: 600;">
+                Submitted Data
+              </h2>
+
+              ${submissionHtml}
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #fafafa; padding: 24px 32px; text-align: center; border-top: 1px solid #ebebeb;">
+              <p style="margin: 0; color: #8e8e8e; font-size: 14px;">
+                Sent by <strong style="color: #595959;">FormZero</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim()
+}
+
+/**
+ * Generates the plain text email body for submission notifications.
+ * Shared between SMTP and Resend implementations.
+ */
+function generateSubmissionEmailText(submission: SubmissionEmailData): string {
+  const submissionText = formatSubmissionDataText(submission.data)
+  const timestamp = new Date(submission.createdAt).toLocaleString('en-US', {
+    dateStyle: 'full',
+    timeStyle: 'long',
+  })
+
+  return `
+FormZero - New Form Submission
+
+You have received a new submission for your form "${submission.formName}".
+
+SUBMISSION DETAILS
+==================
+Form: ${submission.formName}
+Submission ID: ${submission.id}
+Received: ${timestamp}
+
+SUBMITTED DATA
+==============
+${submissionText}
+
+---
+This email was automatically sent by FormZero
+  `.trim()
+}
+
+/**
+ * Sends a notification email via Resend when a new form submission is received.
+ * Resend is simpler to configure than SMTP - just requires an API key.
+ */
+export async function sendSubmissionNotificationViaResend(
+  apiKey: string,
+  fromEmail: string,
+  toEmail: string,
+  submission: SubmissionEmailData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const resend = new Resend(apiKey)
+
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: toEmail,
+      subject: `New Submission for "${submission.formName}"`,
+      html: generateSubmissionEmailHtml(submission),
+      text: generateSubmissionEmailText(submission),
+    })
+
+    if (error) {
+      console.error("Resend error:", error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error("Error sending notification via Resend:", error)
+
+    let errorMessage = "Failed to send notification email"
+    if (error instanceof Error) {
+      errorMessage = error.message
+    }
+
+    return { success: false, error: errorMessage }
+  }
+}
+
+/**
+ * Unified email notification function that sends via Resend (if configured)
+ * or falls back to SMTP.
+ *
+ * Priority:
+ * 1. Resend - if resendApiKey is provided
+ * 2. SMTP - if smtpConfig is provided
+ *
+ * Returns early success if neither is configured (no-op).
+ */
+export async function sendNotification(
+  options: EmailNotificationOptions,
+  submission: SubmissionEmailData
+): Promise<{ success: boolean; error?: string; provider?: 'resend' | 'smtp' | 'none' }> {
+  // Try Resend first if API key is available
+  if (options.resendApiKey) {
+    const fromEmail = options.resendFromEmail || 'FormZero <notifications@resend.dev>'
+    const result = await sendSubmissionNotificationViaResend(
+      options.resendApiKey,
+      fromEmail,
+      options.recipientEmail,
+      submission
+    )
+    return { ...result, provider: 'resend' }
+  }
+
+  // Fall back to SMTP if configured
+  if (options.smtpConfig) {
+    const result = await sendSubmissionNotification(options.smtpConfig, submission)
+    return { ...result, provider: 'smtp' }
+  }
+
+  // No email configuration - not an error, just skip
+  return { success: true, provider: 'none' }
 }

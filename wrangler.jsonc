@@ -9,6 +9,11 @@
 	"observability": {
 		"enabled": true
 	},
+	"vars": {
+		// Optional: Set via `wrangler secret put RESEND_API_KEY` or Cloudflare dashboard
+		// If set, email notifications will use Resend instead of SMTP
+		"RESEND_API_KEY": ""
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",

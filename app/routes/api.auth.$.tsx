@@ -1,23 +1,16 @@
-import { data, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
-import { getAuth, getUserCount } from '#/lib/auth.server'
+import { type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router'
+import { getAuth, isMultiUserEnabled, isPasswordAuthEnabled, getAllowedEmailDomain, getGoogleClientId, getGoogleClientSecret } from '#/lib/auth.server'
 
 async function handleAuthRequest(request: Request, context: any) {
-    const auth = getAuth({ database: context.cloudflare.env.DB })
-    const url = new URL(request.url)
-
-    // Intercept signup requests to enforce single-user constraint
-    if (url.pathname.includes('/sign-up/email') && request.method === 'POST') {
-        const userCount = await getUserCount({ database: context.cloudflare.env.DB })
-
-        if (userCount > 0) {
-            // Return error response - only one user allowed
-            return data({
-                success: false,
-                message: "An account already exists. Please login instead.",
-                error: "SIGNUP_DISABLED"
-            }, { status: 403 })
-        }
-    }
+    const env = context.cloudflare.env as Env
+    const auth = getAuth({
+        database: env.DB,
+        googleClientId: getGoogleClientId(env),
+        googleClientSecret: getGoogleClientSecret(env),
+        allowedEmailDomain: getAllowedEmailDomain(env),
+        multiUserEnabled: isMultiUserEnabled(env),
+        passwordAuthEnabled: isPasswordAuthEnabled(env),
+    })
 
     return auth.handler(request)
 }

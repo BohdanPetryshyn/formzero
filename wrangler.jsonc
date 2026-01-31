@@ -15,5 +15,9 @@
 			"database_name": "formzero",
 			"database_id": "4a765081-eab0-424f-984b-e9b638a16de4",
 		}
-	]
+	],
+	"vars": {
+		"MULTI_USER_ENABLED": "false",
+		"PASSWORD_AUTH_ENABLED": "true"
+	}
 }

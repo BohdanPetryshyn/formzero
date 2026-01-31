@@ -1,1 +1,21 @@
 BETTER_AUTH_SECRET=""
+
+# Google OAuth (Optional)
+# Get these from Google Cloud Console: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# Domain Restriction (Optional)
+# Restrict sign-up to emails from a specific domain (e.g., "example.com")
+# Note: Only secure with Google OAuth - email/password doesn't verify ownership
+ALLOWED_EMAIL_DOMAIN=""
+
+# Multi-User Mode (Optional)
+# Set to "true" to allow multiple users to sign up
+# Default: "false" (only the first user can create an account)
+MULTI_USER_ENABLED="false"
+
+# Password Authentication (Optional)
+# Set to "false" to disable email/password sign-up and login (Google OAuth only)
+# Default: "true"
+PASSWORD_AUTH_ENABLED="true"

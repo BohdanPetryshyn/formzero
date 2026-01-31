@@ -66,6 +66,21 @@
 		"bindings": {
 			"BETTER_AUTH_SECRET": {
 				"description": "Secret for authentication system. Use https://jwtsecrets.com or `openssl rand -hex 16` to generate a secure secret (32 characters). No need to remember it"
+			},
+			"GOOGLE_CLIENT_ID": {
+				"description": "(Optional) Google OAuth Client ID from Google Cloud Console. Leave empty to disable Google login"
+			},
+			"GOOGLE_CLIENT_SECRET": {
+				"description": "(Optional) Google OAuth Client Secret from Google Cloud Console. Required if GOOGLE_CLIENT_ID is set"
+			},
+			"ALLOWED_EMAIL_DOMAIN": {
+				"description": "(Optional) Restrict login to emails from this domain (e.g., 'example.com'). Leave empty to allow any domain"
+			},
+			"MULTI_USER_ENABLED": {
+				"description": "(Optional) Set to 'true' to allow multiple users to sign up. Default: 'false' (single user mode)"
+			},
+			"PASSWORD_AUTH_ENABLED": {
+				"description": "(Optional) Set to 'false' to disable email/password authentication (Google OAuth only). Default: 'true'"
 			}
 		}
 	}

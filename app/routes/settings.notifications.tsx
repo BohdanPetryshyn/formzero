@@ -49,14 +49,26 @@ export async function action({ request, context }: Route.ActionArgs) {
     // Parse form data
     const formData = await request.formData()
     const notification_email = formData.get("notification_email") as string
-    const notification_email_password = formData.get("notification_email_password") as string
-    const smtp_host = formData.get("smtp_host") as string
-    const smtp_port = formData.get("smtp_port") as string
+    const use_resend = formData.get("use_resend") === "true"
 
-    // Validate required fields
-    if (!notification_email || !notification_email_password || !smtp_host || !smtp_port) {
+    // For Resend mode, we only need notification_email
+    // For SMTP mode, we need all fields
+    if (!notification_email) {
       return data(
-        { success: false, error: "Missing required fields" },
+        { success: false, error: "Email address is required" },
+        { status: 400 }
+      )
+    }
+
+    // SMTP fields are only required when not using Resend
+    const notification_email_password = formData.get("notification_email_password") as string | null
+    const smtp_host = formData.get("smtp_host") as string | null
+    const smtp_port = formData.get("smtp_port") as string | null
+
+    // Validate SMTP fields when not using Resend
+    if (!use_resend && (!notification_email_password || !smtp_host || !smtp_port)) {
+      return data(
+        { success: false, error: "Missing SMTP configuration" },
         { status: 400 }
       )
     }
@@ -67,6 +79,9 @@ export async function action({ request, context }: Route.ActionArgs) {
       .first()
 
     const updatedAt = Date.now()
+
+    // Parse smtp_port safely (null if not provided)
+    const smtpPortNum = smtp_port ? parseInt(smtp_port, 10) : null
 
     if (existingSettings) {
       // Update existing settings
@@ -85,7 +100,7 @@ export async function action({ request, context }: Route.ActionArgs) {
           notification_email,
           notification_email_password,
           smtp_host,
-          parseInt(smtp_port, 10),
+          smtpPortNum,
           updatedAt
         )
         .run()
@@ -107,7 +122,7 @@ export async function action({ request, context }: Route.ActionArgs) {
           notification_email,
           notification_email_password,
           smtp_host,
-          parseInt(smtp_port, 10),
+          smtpPortNum,
           updatedAt
         )
         .run()

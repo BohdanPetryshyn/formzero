@@ -34,7 +34,7 @@ Use [FormZero](https://github.com/BohdanPetryshyn/formzero) for your next big th
 - **Analytics Dashboard** - View submission trends and stats
 - **Export CSV** - Download all submissions in one click
 - **Spam Protection** - Proof of Work CAPTCHA and honeypot fields (coming soon)
-- **Email Notifications** - Add your [Resend](http://resend.com) API key to receive notifications (coming soon)
+- **Email Notifications** - Get notified via [Resend](https://resend.com) or SMTP when forms are submitted
 
 <br/>
 
@@ -65,6 +65,34 @@ Here's what happens when you click the button:
 4. You get a unique URL (e.g. `https://formzero.your-domain.workers.dev`) to access your dashboard
 
 Read the [Cloudflare documentation](https://developers.cloudflare.com/workers/platform/deploy-buttons/) for more details.
+
+<br/>
+
+## Email Notifications
+
+FormZero supports email notifications when forms are submitted. You can use either **Resend** (recommended) or **SMTP**.
+
+### Option 1: Resend (Recommended)
+
+[Resend](https://resend.com) is the easiest way to set up email notifications:
+
+1. Create a free account at [resend.com](https://resend.com)
+2. Generate an API key in your Resend dashboard
+3. Add `RESEND_API_KEY` to your Cloudflare Worker:
+   - Go to your Worker settings in the Cloudflare dashboard
+   - Navigate to **Settings** → **Variables and Secrets**
+   - Add `RESEND_API_KEY` as a secret with your API key
+4. Configure the notification email in each form's settings page
+
+That's it! FormZero will use Resend to send notifications to the email you configured.
+
+### Option 2: SMTP
+
+If you don't have a Resend API key configured, you can use your own email provider:
+
+1. Go to your form's **Settings** → **Notifications**
+2. Enter your email address and SMTP credentials
+3. FormZero auto-detects settings for Gmail, Outlook, Yahoo, and iCloud
 
 <br/>
 

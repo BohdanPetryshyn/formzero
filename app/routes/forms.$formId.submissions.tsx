@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Link, useLoaderData } from "react-router"
 import type { Route } from "./+types/forms.$formId.submissions"
 import { createColumns } from "./forms.$formId.submissions/columns"
@@ -105,7 +106,7 @@ export default function SubmissionsPage() {
   const { submissions, stats, chartData } = useLoaderData<typeof loader>()
 
   // Generate columns based on submission data
-  const columns = createColumns(submissions)
+  const columns = useMemo(() => createColumns(submissions), [submissions])
 
   const exportToCSV = () => {
     if (submissions.length === 0) return

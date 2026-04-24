@@ -68,6 +68,22 @@ Read the [Cloudflare documentation](https://developers.cloudflare.com/workers/pl
 
 <br/>
 
+### Update Your Deployment
+
+New features are added regularly. To pull them in, redeploy with the ***Deploy to Cloudflare*** button and connect the new Worker to your existing database — ***your forms, submissions, and endpoint URLs are all preserved***:
+
+1. In your Cloudflare dashboard, rename your existing Worker to `<your-project-name>-backup` — this frees the original name
+2. Delete the GitHub repository created by your previous deployment (it has the same name as the Worker)
+3. Click the ***Deploy to Cloudflare*** button above and use:
+    - The ***same project name and database name*** as before
+    - Your ***existing database*** when Cloudflare offers to connect to one
+    - A new auth secret (generate one via [jwtsecrets.com](https://jwtsecrets.com) or `openssl rand -hex 16`)
+4. Once the new Worker is live and you have confirmed everything works, delete the backup
+
+Websites submitting to your form endpoints keep working unchanged. You'll be signed out of the dashboard because of the new auth secret - sign back in with your existing credentials.
+
+<br/>
+
 ## Tech Stack 🛠️
 
 - **[Cloudflare Workers](https://workers.cloudflare.com/)** + **[D1](https://developers.cloudflare.com/d1/)**

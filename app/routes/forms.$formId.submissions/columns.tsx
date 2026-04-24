@@ -1,5 +1,7 @@
+import { useState } from "react"
 import type { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
+import { useFetcher } from "react-router"
+import { ArrowUpDown, Trash2, Loader2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { Button } from "#/components/ui/button"
 import {
@@ -8,12 +10,80 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "#/components/ui/tooltip"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "#/components/ui/dialog"
 
 export type Submission = {
   id: string
   form_id: string
   data: Record<string, any>
   created_at: number
+}
+
+function DeleteSubmissionButton({ submission }: { submission: Submission }) {
+  const fetcher = useFetcher()
+  const [open, setOpen] = useState(false)
+  const isDeleting = fetcher.state !== "idle"
+
+  const handleDelete = () => {
+    fetcher.submit(null, {
+      method: "delete",
+      action: `/forms/${submission.form_id}/submissions/${submission.id}`,
+    })
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        onClick={() => setOpen(true)}
+        aria-label="Delete submission"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+      <Dialog open={open} onOpenChange={(next) => !isDeleting && setOpen(next)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete submission?</DialogTitle>
+            <DialogDescription>
+              This permanently removes the submission and its data. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
 
 export function createColumns(submissions: Submission[]): ColumnDef<Submission>[] {
@@ -108,5 +178,15 @@ export function createColumns(submissions: Submission[]): ColumnDef<Submission>[
     }
   })
 
-  return [timeColumn, ...dataColumns]
+  const actionsColumn: ColumnDef<Submission> = {
+    id: "actions",
+    header: "",
+    cell: ({ row }) => (
+      <div className="flex justify-end">
+        <DeleteSubmissionButton submission={row.original} />
+      </div>
+    ),
+  }
+
+  return [timeColumn, ...dataColumns, actionsColumn]
 }

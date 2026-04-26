@@ -1,11 +1,19 @@
 import { useState } from "react"
 import { useParams } from "react-router"
 import type { Route } from "./+types/forms.$formId.integration"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, HelpCircle } from "lucide-react"
 import { Highlight, themes } from "prism-react-renderer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Button } from "~/components/ui/button"
+import { Input } from "~/components/ui/input"
+import { Label } from "~/components/ui/label"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip"
 
 export const meta: Route.MetaFunction = () => {
   return [
@@ -19,11 +27,16 @@ export default function IntegrationPage() {
   const formId = params.formId
   const [copiedEndpoint, setCopiedEndpoint] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
+  const [redirectUrl, setRedirectUrl] = useState("")
 
   // Use browser location to construct endpoint
   const formEndpoint = typeof window !== "undefined"
     ? `${window.location.origin}/api/forms/${formId}/submissions`
     : `/api/forms/${formId}/submissions`
+
+  const htmlAction = redirectUrl.trim()
+    ? `${formEndpoint}?redirect=${encodeURIComponent(redirectUrl.trim())}`
+    : formEndpoint
 
   const handleCopyEndpoint = async () => {
     await navigator.clipboard.writeText(formEndpoint)
@@ -37,7 +50,7 @@ export default function IntegrationPage() {
     setTimeout(() => setCopiedCode(false), 2000)
   }
 
-  const htmlExample = `<form action="${formEndpoint}" method="POST">
+  const htmlExample = `<form action="${htmlAction}" method="POST">
   <input type="text" name="name" placeholder="Your Name" required />
   <input type="email" name="email" placeholder="Your Email" required />
   <textarea name="message" placeholder="Your Message"></textarea>
@@ -170,7 +183,40 @@ function ContactForm() {
               <TabsTrigger value="react">React</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="html" className="mt-3">
+            <TabsContent value="html" className="mt-3 space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="redirect-url">Redirect URL (optional)</Label>
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          aria-label="How this works"
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <HelpCircle className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          We append <code>?redirect=</code> to the form&apos;s action URL in the snippet below. It&apos;s a copy-and-paste helper - nothing is saved on your form.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  id="redirect-url"
+                  type="url"
+                  value={redirectUrl}
+                  onChange={(e) => setRedirectUrl(e.target.value)}
+                  placeholder="https://yoursite.com/thanks.html"
+                />
+                <p className="text-xs text-muted-foreground">
+                  After submission, users are redirected here. Leave empty to send them back to the page they came from.
+                </p>
+              </div>
               <div className="relative">
                 <Button
                   variant="ghost"
